@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de IMC Global</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: #333;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 320px;
+    }
+
+    h1 {
+      margin-bottom: 15px;
+      color: #2575fc;
+      font-size: 24px;
+    }
+
+    /* Alternador de Unidades */
+    .unit-selector {
+      display: flex;
+      background-color: #eee;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 4px;
+    }
+
+    .unit-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #666;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: 0.2s;
+      margin: 0;
+    }
+
+    .unit-btn.active {
+      background-color: #2575fc;
+      color: #fff;
+    }
+
+    /* Inputs e Labels */
+    .input-group {
+      text-align: left;
+      margin-bottom: 15px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #666;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #2575fc;
+      outline: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Botão Principal */
+    #btn-calcular {
+      background-color: #2575fc;
+      color: #fff;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      width: 100%;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    #btn-calcular:hover {
+      background-color: #6a11cb;
+    }
+
+    .result {
+      margin-top: 25px;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 10px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Calculadora de IMC</h1>
+    
+    <!-- Seletor de Sistema de Medidas -->
+    <div class="unit-selector">
+      <button class="unit-btn active" id="btn-metrico" onclick="mudarSistema('metrico')">Métrico (kg/m)</button>
+      <button class="unit-btn" id="btn-imperial" onclick="mudarSistema('imperial')">Imperial (lb/ft)</button>
+    </div>
+
+    <!-- Inputs do Sistema Métrico -->
+    <div id="grupo-metrico">
+      <div class="input-group">
+        <label for="peso">Peso (kg)</label>
+        <input type="number" id="peso" placeholder="Ex: 75.5" step="0.1" min="1">
+      </div>
+      <div class="input-group">
+        <label for="altura">Altura (m ou cm)</label>
+        <input type="number" id="altura" placeholder="Ex: 1.75 ou 175" step="0.01" min="0.1">
+      </div>
+    </div>
+
+    <!-- Inputs do Sistema Imperial (Pés e Polegadas são mais fáceis para o usuário do que digitar "5.74 pés") -->
+    <div id="grupo-imperial" class="hidden">
+      <div class="input-group">
+        <label for="peso-lb">Peso (Libras - lbs)</label>
+        <input type="number" id="peso-lb" placeholder="Ex: 165" step="0.1" min="1">
+      </div>
+      <div class="input-group">
+        <label>Altura (Pés e Polegadas)</label>
+        <div class="input-row">
+          <input type="number" id="altura-ft" placeholder="Pés (ft)" min="1" max="8">
+          <input type="number" id="altura-in" placeholder="Pol (in)" min="0" max="11">
+        </div>
+      </div>
+    </div>
+
+    <button id="btn-calcular">Calcular IMC</button>
+    <div class="result" id="resultado"></div>
+  </div>
+
+  <script>
+    let sistemaAtual = 'metrico';
+
+    // Alterna a interface visual entre Métrico e Imperial
+    function mudarSistema(sistema) {
+      sistemaAtual = sistema;
+      
+      const btnMetrico = document.getElementById('btn-metrico');
+      const btnImperial = document.getElementById('btn-imperial');
+      const grupoMetrico = document.getElementById('grupo-metrico');
+      const grupoImperial = document.getElementById('grupo-imperial');
+      
+      // Limpa o resultado ao trocar de sistema
+      document.getElementById('resultado').textContent = '';
+
+      if (sistema === 'metrico') {
+        btnMetrico.classList.add('active');
+        btnImperial.classList.remove('active');
+        grupoMetrico.classList.remove('hidden');
+        grupoImperial.classList.add('hidden');
+      } else {
+        btnMetrico.classList.remove('active');
+        btnImperial.classList.add('active');
+        grupoMetrico.classList.add('hidden');
+        grupoImperial.classList.remove('hidden');
+      }
+    }
+
+    // Evento do botão de calcular
+    document.getElementById('btn-calcular').addEventListener('click', () => {
+      let pesoKg = 0;
+      let alturaM = 0;
+
+      if (sistemaAtual === 'metrico') {
+        const pesoInput = document.getElementById('peso').value;
+        const alturaInput = document.getElementById('altura').value;
+
+        if (!pesoInput || !alturaInput) {
+          exibirResultado('Por favor, preencha todos os campos.', '#ff4d4d');
+          return;
+        }
+
+        pesoKg = parseFloat(pesoInput);
+        alturaM = parseFloat(alturaInput);
+
+        // Ajuste caso digitem altura em centímetros (ex: 175)
+        if (alturaM > 3) alturaM /= 100;
+
+      } else {
+        // Lógica do Sistema Imperial
+        const lbsInput = document.getElementById('peso-lb').value;
+        const ftInput = document.getElementById('altura-ft').value;
+        const inInput = document.getElementById('altura-in').value || 0; // Polegadas podem ser 0
+
+        if (!lbsInput || !ftInput) {
+          exibirResultado('Por favor, preencha o peso e os pés.', '#ff4d4d');
+          return;
+        }
+
+        const libras = parseFloat(lbsInput);
+        const pes = parseFloat(ftInput);
+        const polegadas = parseFloat(inInput);
+
+        // Conversões matemáticas para o sistema métrico:
+        // 1 lb = 0.45359237 kg
+        pesoKg = libras * 0.45359237;
+        
+        // Total de polegadas = (Pés * 12) + polegadas restantes
+        // 1 polegada = 0.0254 metros
+        const totalPolegadas = (pes * 12) + polegadas;
+        alturaM = totalPolegadas * 0.0254;
+      }
+
+      // Validação final de segurança
+      if (pesoKg <= 0 || alturaM <= 0) {
+        exibirResultado('Por favor, insira valores maiores que zero.', '#ff4d4d');
+        return;
+      }
+
+      // Cálculo do IMC (A fórmula do IMC é universal baseada em kg/m²)
+      const imc = pesoKg / (alturaM * alturaM);
+      let categoria = '';
+      let corStatus = '';
+
+      if (imc < 18.5) {
+        categoria = 'Abaixo do peso';
+        corStatus = '#33b5e5';
+      } else if (imc < 25) {
+        categoria = 'Peso normal';
+        corStatus = '#2bbbad';
+      } else if (imc < 30) {
+        categoria = 'Sobrepeso';
+        corStatus = '#ffbb33';
+      } else {
+        categoria = 'Obesidade';
+        corStatus = '#ff4d4d';
+      }
+
+      exibirResultado(`Seu IMC é ${imc.toFixed(2)} (${categoria})`, corStatus);
+    });
+
+    function exibirResultado(texto, cor) {
+      const resultado = document.getElementById('resultado');
+      resultado.textContent = texto;
+      resultado.style.color = cor;
+    }
+  </script>
+
+</body>
+</html>
